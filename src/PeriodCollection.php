@@ -95,4 +95,9 @@ class PeriodCollection implements ArrayAccess, Iterator, Countable
     {
         return count($this->periods) === 0;
     }
+
+    public function duration(): Duration
+    {
+        return Duration::fromPeriodCollection($this);
+    }
 }

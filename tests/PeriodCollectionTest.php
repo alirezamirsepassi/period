@@ -4,6 +4,7 @@ namespace Spatie\Period\Tests;
 
 use DateTimeImmutable;
 use Spatie\Period\Period;
+use Spatie\Period\Duration;
 use PHPUnit\Framework\TestCase;
 use Spatie\Period\PeriodCollection;
 
@@ -140,5 +141,22 @@ class PeriodCollectionTest extends TestCase
 
         $this->assertFalse($period->contains(new DateTimeImmutable('2017-12-31')));
         $this->assertFalse($period->contains(new DateTimeImmutable('2018-02-01')));
+    }
+
+    /**
+     * @test
+     */
+    public function it_has_a_duration()
+    {
+        $collection = new PeriodCollection(
+            Period::make('2018-01-01', '2018-01-05'),
+            Period::make('2018-01-11', '2018-01-15'),
+            Period::make('2018-01-21', '2018-01-25')
+        );
+
+        $duration = $collection->duration();
+        $expected = Duration::make('15 days');
+
+        $this->assertTrue($expected->equals($duration));
     }
 }

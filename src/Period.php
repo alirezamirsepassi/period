@@ -449,6 +449,11 @@ class Period implements IteratorAggregate
         );
     }
 
+    public function duration(): Duration
+    {
+        return Duration::fromPeriod($this);
+    }
+
     protected static function resolveDate($date, ?string $format): DateTimeImmutable
     {
         if ($date instanceof DateTimeImmutable) {
