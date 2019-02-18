@@ -7,42 +7,42 @@ namespace Spatie\Period;
 use DateInterval;
 use DateTimeImmutable;
 
-final class Duration
+class Duration
 {
     /** @var int */
-    private $seconds;
+    protected $seconds;
 
     /** @var int */
-    private $precision;
+    protected $precision;
 
-    private function __construct()
+    protected function __construct()
     {
     }
 
-    public static function make($value): self
+    public static function make($value): Duration
     {
         if ($value instanceof Period) {
-            return self::fromPeriod($value);
+            return static::fromPeriod($value);
         }
 
         if ($value instanceof PeriodCollection) {
-            return self::fromPeriodCollection($value);
+            return static::fromPeriodCollection($value);
         }
 
         if ($value instanceof DateInterval) {
-            return self::fromDateInterval($value);
+            return static::fromDateInterval($value);
         }
 
         $stringValue = (string) $value;
 
         if (0 === strpos($stringValue, 'P')) {
-            return self::fromDateInterval(new DateInterval($stringValue));
+            return static::fromDateInterval(new DateInterval($stringValue));
         }
 
-        return self::fromDateInterval(DateInterval::createFromDateString($stringValue));
+        return static::fromDateInterval(DateInterval::createFromDateString($stringValue));
     }
 
-    public static function fromPeriod(Period $period): self
+    public static function fromPeriod(Period $period): Duration
     {
         $start = $period->getIncludedStart();
         $end = $period->getIncludedEnd();
@@ -60,16 +60,16 @@ final class Duration
             throw new \InvalidArgumentException('A duration can only be determined up to a precision of Precision::DAY');
         }
 
-        $duration = new self();
+        $duration = new static();
         $duration->seconds = $end->getTimestamp() - $start->getTimestamp();
         $duration->precision = $precision;
 
         return $duration;
     }
 
-    public static function fromPeriodCollection(PeriodCollection $collection): self
+    public static function fromPeriodCollection(PeriodCollection $collection): Duration
     {
-        $duration = self::none();
+        $duration = static::none();
 
         foreach ($collection as $period) {
             $duration = $duration->withAdded($period->duration());
@@ -78,21 +78,21 @@ final class Duration
         return $duration;
     }
 
-    public static function fromDateInterval(DateInterval $interval): self
+    public static function fromDateInterval(DateInterval $interval): Duration
     {
         $now = new DateTimeImmutable();
         $then = $now->add($interval);
 
-        $duration = new self();
+        $duration = new static();
         $duration->seconds = $then->getTimestamp() - $now->getTimestamp();
-        $duration->precision = self::determinePrecisionFromSeconds($duration->seconds);
+        $duration->precision = static::determinePrecisionFromSeconds($duration->seconds);
 
         return $duration;
     }
 
-    public static function none(): self
+    public static function none(): Duration
     {
-        $new = new self();
+        $new = new static();
         $new->seconds = 0;
         $new->precision = Precision::SECOND;
 
@@ -120,7 +120,7 @@ final class Duration
         return $this->precision;
     }
 
-    public function withAdded(self $other): self
+    public function withAdded(Duration $other): Duration
     {
         $new = clone $this;
         $new->seconds = $this->seconds + $other->length(Precision::SECOND);
@@ -129,34 +129,34 @@ final class Duration
         return $new;
     }
 
-    public function compareTo(self $other): int
+    public function compareTo(Duration $other): int
     {
         $precision = $this->largestCommonPrecision($other);
 
         return $this->length($precision) <=> $other->length($precision);
     }
 
-    public function isLargerThan(self $other): bool
+    public function isLargerThan(Duration $other): bool
     {
         return 1 === $this->compareTo($other);
     }
 
-    public function equals(self $other): bool
+    public function equals(Duration $other): bool
     {
         return 0 === $this->compareTo($other);
     }
 
-    public function isSmallerThan(self $other): bool
+    public function isSmallerThan(Duration $other): bool
     {
         return -1 === $this->compareTo($other);
     }
 
-    private function largestCommonPrecision(self $other): int
+    protected function largestCommonPrecision(Duration $other): int
     {
         return $this->precision >= $other->precision() ? $this->precision : $other->precision();
     }
 
-    private static function determinePrecisionFromSeconds(int $seconds): int
+    protected static function determinePrecisionFromSeconds(int $seconds): int
     {
         $minutes = intdiv($seconds, 60);
         $remainingSeconds = $seconds % 60;

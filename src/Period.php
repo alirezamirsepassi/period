@@ -526,7 +526,7 @@ class Period implements IteratorAggregate
         return new DateInterval($interval);
     }
 
-    protected function ensurePrecisionMatches(Period $period): void
+    protected function ensurePrecisionMatches(Period $period)
     {
         if ($this->precisionMask === $period->precisionMask) {
             return;
